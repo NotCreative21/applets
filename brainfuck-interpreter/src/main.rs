@@ -7,16 +7,18 @@ fn run(data: &[u8]) -> String{
 
     while pi < data.len() {
         match data[pi] {
-            b'[' => if s[ps] == 0 {
-                let mut lc = 1;
-                pi += 1;
-                while lc > 0 {
-                    match data[pi] {
-                        b'[' => lc += 1,
-                        b']' => lc -= 1,
-                        _ => {}
-                    }
+            b'[' => {
+                if s[ps] == 0 {
+                    let mut lc = 1;
                     pi += 1;
+                    while lc > 0 {
+                        match data[pi] {
+                            b'[' => lc += 1,
+                            b']' => lc -= 1,
+                            _ => {}
+                        }
+                        pi += 1;
+                    }
                 }
             },
             b']' => { 
