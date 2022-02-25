@@ -34,7 +34,6 @@ pub fn draw_frame(mut frame: Frame) -> Frame {
         }
     }
     if frame.pixels[rng.gen_range(1..frame.height) as usize][rng.gen_range(1..frame.width) as usize] == 0 {
-        // max lenght
         frame.pixels[rng.gen_range(1..frame.height) as usize][rng.gen_range(1..frame.width) as usize] = rng.gen_range(0..18) as u16; 
     }
     frame
