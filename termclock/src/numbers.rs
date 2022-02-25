@@ -5,7 +5,7 @@ pub fn zero() -> &'static str {
 ░███    ░███
 ░███    ░███
 ░░███   ███ 
- ░░░█████░ "
+ ░░░█████░  "
 }
 
 pub fn one() -> &'static str {
@@ -76,7 +76,7 @@ pub fn seven() -> &'static str {
       ███  
      ███   
     ███    
-   ███   "
+   ███     "
 }
 
 pub fn eight() -> &'static str {
