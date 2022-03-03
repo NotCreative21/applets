@@ -9,4 +9,5 @@ These small programs don't deserve their own repo, but are important enough that
 * mailcli - send emails through the terminal
 * rconsend - mini cli rcon client to interface with mc servers
 * rmatrix - honestly don't even know at this point
+* server_remover - discord server cleaner
 * termclock - terminal ascii clock
