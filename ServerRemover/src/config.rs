@@ -10,7 +10,7 @@ pub struct Config {
     pub blacklist_users: Vec<u64>,
     pub blacklist_channels: Vec<u64>,
     pub blacklist_roles: Vec<u64>,
-    pub user_whitelist: Vec<u64>,
+    pub user_whitelist: Option<Vec<u64>>,
 }
 
 impl Config {
