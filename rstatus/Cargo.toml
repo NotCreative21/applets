@@ -1,0 +1,19 @@
+[package]
+name = "rstatus"
+version = "0.1.0"
+edition = "2021"
+
+[cfg]
+features = "battery"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sysinfo = "0.23.5"
+chrono = "0.4.19"
+
+[features]
+battery = []
+
+[profile.release]
+panic = "abort"
