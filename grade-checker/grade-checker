@@ -1,0 +1,126 @@
+#!/usr/bin/python
+from studentvue import StudentVue
+import json
+import sys
+from datetime import date
+
+"""
+    Really janky script to check grades
+
+    I really don't like the studentvue app or ui so I found an api and wrote a script to check things for me
+    It's a really janky script but it functions, mostly
+    setup.sh can be run, it will prompt you for credentials then copy the file into the path (Linux only)
+    
+    tested with python 3.9.9, but should function with python 3+ (maybe later versions of 2)
+"""
+
+domain = "replaceWithDomain"
+username = "replaceWithUsername"
+password = "replaceWithPassword"
+
+# print out the basic class info
+def get_course_info(course):
+    print("\n\nCourse: {} Block: {}".format(course["@Title"], course["@Period"]))
+    print("Teacher: {} <{}>".format(course["@Staff"], course["@StaffEMail"]))
+    print("Grade:", course["Marks"]["Mark"]["@CalculatedScoreRaw"])
+
+# check if it's within a few days of the current date
+def parsedate(assignment_date):
+    today = date.today()
+    local_date = today.strftime("%m/%d/%y").split("/")
+    elements = assignment_date.split("/")
+    # ensure the year is the same, this is incredibly janky because the formatting is different
+    if int(elements[2]) == int(local_date[2]) + 2000:
+        # if the month is the same then check if it's within a certain range of days
+        if int(elements[0]) == int(local_date[0]):
+            for i in range(-10, 10):
+                if int(elements[1]) + i == int(local_date[1]):
+                    return True
+        # if the days are near the end of the month then we might have different months
+        if int(elements[1]) >= 25 and int(local_date[1]) < 5:
+            # make sure it's +-1 month
+            if int(elements[0]) + 1 == int(local_date[0]) or int(elements[0]) - 1 == int(local_date[0]):
+                return True
+    # we don't want to print out anything if it's not recent
+    return False
+
+# print and list all the grades
+def get_marks(course, recent):
+    for assignment in course:
+        # check if the date is from recent time if we only want recent assignemnts
+        if recent:
+            if not parsedate(assignment["@DueDate"]) and not parsedate(assignment["@Date"]):
+                continue
+        # if the grade is not avaible we can just say that
+        if "Not" in str(assignment["@Score"]):
+            print("\t{:<57} \tScore: \t{:>}".format(assignment["@Measure"], "Not available"))
+            continue
+        # this is janky, the response data is inconsistent in fomatting
+        raw_score = str(assignment["@Score"]).split(" ")
+        actual_score = 100
+        pretty_score = raw_score[0]
+        reported_score = assignment["@Points"].split(" ")
+        # remove some of the unnecessary decimals
+        pretty_reported = "{:>3}/{:>3}".format(round(float(reported_score[0]), 2), round(float(reported_score[2]), 2))
+        if len(raw_score) != 1:
+            pretty_score = f"{raw_score[0]}/{round(float(raw_score[3]))}"
+            actual_score = (float(raw_score[0]) / float(raw_score[3])) * 100.0
+        # print out the calculated score, the given score, and the score put in based on weight
+        # this is also quite janky
+        print("\t{:<57} \tScore: {:>7} => {:>6}% - {:>11}"
+                .format(
+                    assignment["@Measure"],
+                    pretty_score,
+                    round(actual_score, 2), pretty_reported
+                )
+            )
+        print(f"{''.rjust(72)}Due: {assignment['@DueDate']} Turned in: {assignment['@Date']}")
+
+# iterate through all the classes
+def walk(grades, recent):
+    # this api has a really messy response
+    for course in grades["Gradebook"]["Courses"]["Course"]:
+        get_course_info(course)
+        get_marks(course["Marks"]["Mark"]["Assignments"]["Assignment"], recent)
+
+def check_args(args):
+    valid = ["help", "recent"]
+
+    # check if argument is a valid one
+    for arg in args:
+        if arg not in valid:
+            print(f"invalid argument: {arg}")
+            return
+
+    if "help" in args:
+        print("""\
+grade-checker.py 
+Example usage:
+    grade-checker          | list grades
+    grade-checker help     | displays this
+    grade-checker recent   | displays grades put in within the last 3 days
+    """)
+
+    # call it while displaying recents if required
+    if "recent" in args:
+        call(True)
+
+# request all the data and parse it
+def call(recent):
+    sv = StudentVue(username, password, domain)
+    # parse into json
+    json_grades = json.loads(json.dumps(sv.get_gradebook(), indent=4))
+    walk(json_grades, recent)
+
+def main():
+    args = sys.argv
+    if len(args) > 1:
+        # remove path of file
+        args.pop(0)
+        check_args(args)
+        return
+    # request all data and print it out
+    call(False)
+
+if __name__ == "__main__":
+    main()

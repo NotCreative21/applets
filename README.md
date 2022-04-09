@@ -5,6 +5,7 @@ These small programs don't deserve their own repo, but are important enough that
 ###### programs
 * 3body - some test with 3 body problems
 * brainfuck-interpreter - primitive brain fuck interpreter
+* grade-checker - check grades with cli and student vue api
 * img-slicer - slice images into layers based on pixel value
 * mailcli - send emails through the terminal
 * ocr-cli - cli tool to convert images to text

