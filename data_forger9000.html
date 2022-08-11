@@ -1,0 +1,103 @@
+<canvas id="myChart" width="400" height="400"></canvas>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"
+  integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script>
+  function random_bm(min, max, skew) {
+    let u = 0,
+      v = 0;
+    while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while (v === 0) v = Math.random();
+    let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+
+    num = num / 10.0 + 0.5; // Translate to 0 -> 1
+    if (num > 1 || num < 0) num = random_bm(min, max, skew);
+    // resample between 0 and 1 if out of range
+    else {
+      num = Math.pow(num, skew); // Skew
+      num *= max - min; // Stretch to fill range
+      num += min; // offset to min
+    }
+    return num;
+  }
+  function clamp(num, min, max) {
+    if (num < min) {
+      return min;
+    } else if (num > max) {
+      return max;
+    }
+    return num;
+  }
+  const ctx = document.getElementById("myChart").getContext("2d");
+  let tdata = {
+    datasets: [
+      {
+        label: "hours of sleep in relation to GPA",
+        data: [],
+        backgroundColor: "rgb(255, 99, 132)",
+      },
+    ],
+  };
+  console.log(tdata.datasets);
+  const d = tdata.datasets[0].data;
+  d.push({ x: 1, y: 2.2 });
+  d.push({ x: 12, y: 3.1 });
+  let meanX = 0;
+  let meanY = 0;
+  let valsX = new Map([]);
+  let valsY = new Map([]);
+  for (let i = 0; i < 734; i++) {
+    const dx = random_bm(0, 12, 1);
+    const dy = clamp(random_bm(1, 5, 1), 1.8, 4);
+    meanX += dx;
+    meanY += dy;
+    if (valsX.has(dx)) {
+      valsX[dx] += 1;
+    } else {
+      valsX.set(dx, 0);
+    }
+    valsY.set(dy, 0);
+    d.push({ x: dx, y: dy });
+  }
+  console.log("meanX: " + (meanX / d.length).toFixed(3));
+  console.log("meanY: " + (meanY / d.length).toFixed(3));
+	// need to change this to nearest whole num when collecting mean or smth
+  let modeX = 0;
+  let min = 0;
+  for (const x of valsX.entries()) {
+    if (x[1] > min) {
+      min = x[1];
+      modeX = x[0];
+    }
+  }
+  min = 0;
+  let modeY = 0;
+  for (const y of valsX.entries()) {
+    if (y[1] > min) {
+      min = y[1];
+      modeY = y[0];
+    }
+  }
+  console.log("modeX: " + modeX);
+  console.log("modeX: " + modeY);
+  const myChart = new Chart(ctx, {
+    type: "scatter",
+    data: tdata,
+    options: {
+      scales: {
+        x: {
+          ticks: {
+            callback: function (value, index, ticks) {
+              return value;
+            },
+          },
+          type: "linear",
+          position: "bottom",
+        },
+      },
+    },
+  });
+</script>
