@@ -52,29 +52,43 @@ def get_marks(course, recent):
             if not parsedate(assignment["@DueDate"]) and not parsedate(assignment["@Date"]):
                 continue
         # if the grade is not avaible we can just say that
-        if "Not" in str(assignment["@Score"]):
-            print("\t{:<57} \tScore: \t{:>}".format(assignment["@Measure"], "Not available"))
+        last_measure = ""
+        cont = False
+        try:
+            last_measure = assignment["@Measure"]
+            score = assignment["@Score"]
+            if "Not" in str(score):
+                print("\t{:<57} \tScore: \t{:>}".format(assignment["@Measure"], "Not available"))
+                cont = True
+        except:
+            if "Not" in str(assignment):
+                print("\t{:<57} \tScore: \t{:>}".format(last_measure, "Not available"))
+                cont = True
+        if cont:
             continue
         # this is janky, the response data is inconsistent in fomatting
-        raw_score = str(assignment["@Score"]).split(" ")
-        actual_score = 100
-        pretty_score = raw_score[0]
-        reported_score = assignment["@Points"].split(" ")
-        # remove some of the unnecessary decimals
-        pretty_reported = "{:>3}/{:>3}".format(round(float(reported_score[0]), 2), round(float(reported_score[2]), 2))
-        if len(raw_score) != 1:
-            pretty_score = f"{raw_score[0]}/{round(float(raw_score[3]))}"
-            actual_score = (float(raw_score[0]) / float(raw_score[3])) * 100.0
-        # print out the calculated score, the given score, and the score put in based on weight
-        # this is also quite janky
-        print("\t{:<57} \tScore: {:>7} => {:>6}% - {:>11}"
-                .format(
-                    assignment["@Measure"],
-                    pretty_score,
-                    round(actual_score, 2), pretty_reported
+        try:
+            raw_score = str(assignment["@Score"]).split(" ")
+            actual_score = 100
+            pretty_score = raw_score[0]
+            reported_score = assignment["@Points"].split(" ")
+            # remove some of the unnecessary decimals
+            pretty_reported = "{:>3}/{:>3}".format(round(float(reported_score[0]), 2), round(float(reported_score[2]), 2))
+            if len(raw_score) != 1:
+                pretty_score = f"{raw_score[0]}/{round(float(raw_score[3]))}"
+                actual_score = (float(raw_score[0]) / float(raw_score[3])) * 100.0
+            # print out the calculated score, the given score, and the score put in based on weight
+            # this is also quite janky
+            print("\t{:<57} \tScore: {:>7} => {:>6}% - {:>11}"
+                    .format(
+                        assignment["@Measure"],
+                        pretty_score,
+                        round(actual_score, 2), pretty_reported
+                    )
                 )
-            )
-        print(f"{''.rjust(72)}Due: {assignment['@DueDate']} Turned in: {assignment['@Date']}")
+            print(f"{''.rjust(72)}Due: {assignment['@DueDate']} Turned in: {assignment['@Date']}")
+        except:
+            continue
 
 # iterate through all the classes
 def walk(grades, recent):
@@ -94,7 +108,7 @@ def check_args(args):
 
     if "help" in args:
         print("""\
-grade-checker.py 
+grade-checker.py
 Example usage:
     grade-checker          | list grades
     grade-checker help     | displays this
@@ -124,3 +138,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
