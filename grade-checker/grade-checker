@@ -95,7 +95,10 @@ def walk(grades, recent):
     # this api has a really messy response
     for course in grades["Gradebook"]["Courses"]["Course"]:
         get_course_info(course)
-        get_marks(course["Marks"]["Mark"]["Assignments"]["Assignment"], recent)
+        try:
+            get_marks(course["Marks"]["Mark"]["Assignments"]["Assignment"], recent)
+        except:
+            pass
 
 def check_args(args):
     valid = ["help", "recent"]
